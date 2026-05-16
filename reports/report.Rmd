@@ -2,7 +2,9 @@
 title: "NYC flight delay analysis"
 author: "Cole"
 date: "2026-03-01"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -19,20 +21,23 @@ This analysis evaluates factors associated with arrival delays for flights depar
 - Business travelers sensitive to arrival times
 - Travel planners seeking lower delay risk options
 
+
 ```{r libraries, echo=FALSE}
 library(tidyverse)
 library(nycflights13)
 library(arrow)
 library(janitor)
+library(here)
+library(knitr)
 ```
 
 
 ```{r retrieve flight data, echo=FALSE}
 
-write_csv(flights, "data/raw/flights.csv")
-write_csv(airlines, "data/raw/airlines.csv")
-write_csv(weather, "data/raw/weather.csv")
-write_csv(airports, "data/raw/airports.csv")
+write_csv(flights, here("data/raw/flights.csv"))
+write_csv(airlines, here("data/raw/airlines.csv"))
+write_csv(weather, here("data/raw/weather.csv"))
+write_csv(airports, here("data/raw/airports.csv"))
 
 ```
 ### Data cleaning
@@ -41,12 +46,12 @@ Flight data were enriched by merging airline and airport metadata. Duplicate and
 
 ```{r data cleaning reading and joining, echo=FALSE}
 
-flights_raw <- read_csv("data/raw/flights.csv")
+flights_raw <- read_csv(here("data/raw/flights.csv"))
 
-airlines_raw <- read_csv("data/raw/airlines.csv") |>
+airlines_raw <- read_csv(here("data/raw/airlines.csv")) |>
   rename(airline_name = name)
 
-airports_raw <- read_csv("data/raw/airports.csv") |>
+airports_raw <- read_csv(here("data/raw/airports.csv")) |>
   rename(airport_name = name)
 
 airports_raw_filtered <- airports_raw[ ,c("faa","airport_name")] 
@@ -110,7 +115,7 @@ glimpse(flights_clean)
 
 # save data as parquet
 
-write_parquet(flights_clean, "data/clean/flights_cleaned.parquet")
+write_parquet(flights_clean, here("data/clean/flights_cleaned.parquet"))
 ```
 
 ### Exploratory analysis
@@ -120,7 +125,7 @@ Flights were grouped by airline, departure airport, day of week, and departure h
 ```{r create functions for plot generation}
 # read parquet
 
-flights_cleaned <- read_parquet("data/clean/flights_cleaned.parquet")
+flights_cleaned <- read_parquet(here("data/clean/flights_cleaned.parquet"))
 
 glimpse(flights_cleaned)
 
@@ -188,10 +193,10 @@ plot_delay_risk(flights_cleaned, airline_name, "Risk of meaningful arrival delay
 ```
 
 Insight
-Substantial variation exists for both high and significant delay between the different airlines. This difference is clear when comparing Hawaiian Ailinces, Alaska Airlines and US airways to Frontier Airlines, Airtran Airways and Mesa Airlines.
+Substantial variation exists for both high and significant delay between the different airlines. This difference is clear when comparing Hawaiian Airlines, Alaska Airlines and US airways to Frontier Airlines, Airtran Airways and Mesa Airlines.
 
-Reccomendation
-Stakeholders should prefer airlines with demonstratable lower delay risk when possible. 
+Recommendation
+Stakeholders should prefer airlines with demonstrable lower delay risk when possible. 
 
 
 Airport Origin Delay risk
@@ -202,7 +207,7 @@ plot_delay_risk(flights_cleaned, airport_origin_name, "Risk of meaningful arriva
 Insight
 Small variation exists for both high and significant delay between the three airports. La Guardia demonstrates lower Significant and high delay severity. 
 
-Reccomendation
+Recommendation
 Stakeholders should prefer La Guardia for their departing airport when possible. 
 
 
@@ -217,7 +222,7 @@ plot_delay_risk(flights_cleaned, day_of_week, "Risk of meaningful arrival delays
 Insight
 Moderate delay variation exists between the days. Saturday and Sunday show the lowest delay risk while Thursday has he highest.
 
-Reccomendation
+Recommendation
 Stakeholders should prioritize travelling on lower delay risk days. 
 
 Hour of day delay plot
@@ -230,7 +235,7 @@ print(delay_hour_pct_plot)
 Insight
 Substantial delay variation exists throughout the course of the day. Just before 10am experiences low delay which increases gradually until after midnight, which is when the highest delay risks are experienced.
 
-Reccomendation
+Recommendation
 Stakeholders should prioritize travelling in the morning between 5am and 10am. 
 
 
