@@ -3,8 +3,9 @@ title: "NYC flight delay analysis"
 author: "Cole"
 date: "2026-03-01"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
+  
 ---
 
 ```{r setup, include=FALSE}
@@ -22,7 +23,7 @@ This analysis evaluates factors associated with arrival delays for flights depar
 - Travel planners seeking lower delay risk options
 
 
-```{r libraries, echo=FALSE}
+```{r libraries, echo=FALSE, include=FALSE}
 library(tidyverse)
 library(nycflights13)
 library(arrow)
@@ -32,7 +33,7 @@ library(knitr)
 ```
 
 
-```{r retrieve flight data, echo=FALSE}
+```{r retrieve flight data, echo=FALSE, include=FALSE}
 
 write_csv(flights, here("data/raw/flights.csv"))
 write_csv(airlines, here("data/raw/airlines.csv"))
@@ -44,7 +45,7 @@ write_csv(airports, here("data/raw/airports.csv"))
 
 Flight data were enriched by merging airline and airport metadata. Duplicate and incomplete flight records were removed, and missing delay values were excluded. Datetime features and categorical delay classifications were created to support comparative analysis.
 
-```{r data cleaning reading and joining, echo=FALSE}
+```{r data cleaning reading and joining, echo=FALSE, include=FALSE}
 
 flights_raw <- read_csv(here("data/raw/flights.csv"))
 
@@ -71,10 +72,8 @@ flights_raw_filtered <- flights_raw[ ,c("flight","carrier","origin","dest","time
 
 - Arrival delay > 60 minutes is significant
 - Arrival delay 15 to 60 minutes is high
-- Arrival delay 0 to 15 minutes is low
-- Arrival delay -∞ to 0 is none 
 
-```{r generating categorical variables, echo=FALSE}
+```{r generating categorical variables, echo=FALSE, include=FALSE}
 # generating month, day, renaming 
 
 flights_joined <- flights_raw_filtered[ , c("flight_id", "flight", "airline_name","airport_origin_name","airport_destination_name","dep_delay","arr_delay","time_hour")] |>
@@ -97,7 +96,7 @@ flights_joined <- flights_raw_filtered[ , c("flight_id", "flight", "airline_name
 ```
 
 
-```{r duplicates and invalid flight removal, echo=FALSE}
+```{r duplicates and invalid flight removal, echo=FALSE, include=FALSE}
 
 # removing invalid flights and duplicates
 
@@ -122,7 +121,7 @@ write_parquet(flights_clean, here("data/clean/flights_cleaned.parquet"))
 
 Flights were grouped by airline, departure airport, day of week, and departure hour. For each group, the percentage of flights experiencing high or significant arrival delays was calculated. The following analysis evaluates how delay risk varies across key booking decisions available to stakeholders.
 
-```{r create functions for plot generation}
+```{r create functions for plot generation, include=FALSE}
 # read parquet
 
 flights_cleaned <- read_parquet(here("data/clean/flights_cleaned.parquet"))
@@ -192,22 +191,23 @@ plot_delay_risk(flights_cleaned, airline_name, "Risk of meaningful arrival delay
 
 ```
 
-Insight
-Substantial variation exists for both high and significant delay between the different airlines. This difference is clear when comparing Hawaiian Airlines, Alaska Airlines and US airways to Frontier Airlines, Airtran Airways and Mesa Airlines.
+Insight:
+Substantial variation exists for both high and significant delay between the different airlines. This difference is clear when comparing Hawaiian Airlines, Alaska Airlines, and US Airways to Frontier Airlines, Airtran Airways, and Mesa Airlines.
 
-Recommendation
+Recommendation:
 Stakeholders should prefer airlines with demonstrable lower delay risk when possible. 
 
 
 Airport Origin Delay risk
+
 ```{r airport delay plot, echo=FALSE}
 plot_delay_risk(flights_cleaned, airport_origin_name, "Risk of meaningful arrival delays by origin airport", "Airport Origin")
 ```
 
-Insight
-Small variation exists for both high and significant delay between the three airports. La Guardia demonstrates lower Significant and high delay severity. 
+Insight:
+Small variation exists for both high and significant delay between the three airports. La Guardia demonstrates lower significant and high delay severity. 
 
-Recommendation
+Recommendation:
 Stakeholders should prefer La Guardia for their departing airport when possible. 
 
 
@@ -219,10 +219,10 @@ plot_delay_risk(flights_cleaned, day_of_week, "Risk of meaningful arrival delays
 
 ```
 
-Insight
-Moderate delay variation exists between the days. Saturday and Sunday show the lowest delay risk while Thursday has he highest.
+Insight:
+Moderate delay variation exists between the days. Saturday and Sunday show the lowest delay risk while Thursday has the highest.
 
-Recommendation
+Recommendation:
 Stakeholders should prioritize travelling on lower delay risk days. 
 
 Hour of day delay plot
@@ -232,10 +232,10 @@ Hour of day delay plot
 print(delay_hour_pct_plot)
 
 ```
-Insight
-Substantial delay variation exists throughout the course of the day. Just before 10am experiences low delay which increases gradually until after midnight, which is when the highest delay risks are experienced.
+Insight:
+Substantial delay variation exists throughout the course of the day. Just before 10am experiences low delay, which increases gradually until after midnight, which is when the highest delay risks are experienced.
 
-Recommendation
+Recommendation:
 Stakeholders should prioritize travelling in the morning between 5am and 10am. 
 
 
@@ -246,7 +246,7 @@ Stakeholders should prioritize travelling in the morning between 5am and 10am.
 - Day of departure choice influences delay risk
 
 ### Recommendations
-Stakeholders should primarily target time of day departure of around 5-10am. Of the flights available at that time, prioritize the lowest risk airlines, particularly US Airways, Alaska Airlines and Hawaiian Airlines. Next, prioritize the day of departure for Saturday or Sunday. Finally prioritize departing from La Guardia over the other two. 
+Stakeholders should primarily target a departure time of around 5-10am. Of the flights available at that time, prioritize the lowest risk airlines, particularly US Airways, Alaska Airlines and Hawaiian Airlines. Next, prioritize the day of departure for Saturday or Sunday. Finally prioritize departing from La Guardia over the other two. 
 
 ### Limitations
 Analysis limited to 2013 data. Results describe historical patterns, not predictions. 
